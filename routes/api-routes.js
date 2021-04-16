@@ -3,8 +3,8 @@ const db = require("../models")
 
 
 //add data 
-router.post("/api/workouts", ({ body }, res) => {
-    db.Workout.create(body)
+router.post("/api/workouts", (req, res) => {
+    db.Workout.create(req.body)
     .then(fitnessDB => {
       res.json(fitnessDB);
     })
@@ -15,57 +15,56 @@ router.post("/api/workouts", ({ body }, res) => {
 
 //update the data
 
-router.put("/api/workouts/:id", ({ body, params }, res) => {
-    const id = params.id
-    //pushing the body to exercise data by the id
-    //
-    db.Workout.findByIdandUpdate(id, {$push: {exercise: body}}, {new: true})
-    .then(fitnessDB => {
-      res.json(fitnessDB);
-    })
-    .catch(err => {
-      res.status(400).json(err);
-    });
-});
-
-//this is for the "Last Workout"
-router.get("/api/workouts", ({ body }, res) => {
-    //aggregate adds fields based on existing fields
-    db.Workout.aggregate([
-      {
-        $addFields: {
-              totalDuration: {$sum: "exercises.duration"}
-        }
-      }
-    ])
-    .then(fitnessDB => {
-      res.json(fitnessDB);
-    })
-    .catch(err => {
-      res.status(400).json(err);
-    });
-});
-
-//This is for the Stat Dashboard
-router.get("/api/workouts/range", ({ body }, res) => {
-  //
-  db.Workout.aggregate([
-    {
-      $addFields: {
-            totalDuration: {$sum: "exercises.duration"}
-      }
-    }
-  ])
-  //limit 7 days
-  .limit(7)
+router.put("/api/workouts/:id", (req,res) => {
+  console.log(req.body)
+  const body = req.body
+  console.log(req.params.id)
+  const id = req.params.id
+  db.Workout.findByIdAndUpdate(id, {$push: {exercises: body }}, {new: true})
   .then(fitnessDB => {
-    res.json(fitnessDB);
+      res.json(fitnessDB)
   })
   .catch(err => {
-    res.status(400).json(err);
-  });
-});
+      res.status(400).json(err)
+  })
+})
 
+//this is for the "Last Workout"
+router.get("/api/workouts", (req, res) => {
+  db.Workout.aggregate([
+      {
+          $addFields: {
+              totalDuration: {$sum: "$exercises.duration"}
+          }
+      }
+  ])
+  .then(fitnessDB => {
+      res.json(fitnessDB)
+  })
+  .catch(err => {
+      res.status(400).json(err)
+  })
+})
+
+//This is for the Stat Dashboard
+router.get("/api/workouts/range", (req, res) => {
+  db.Workout.aggregate([
+      {
+          $addFields: {
+              totalDuration: {$sum: "$exercises.duration"}
+          }
+      }
+  ])
+  .limit(7)
+  .then(fitnessDB => {
+      res.json(fitnessDB)
+  })
+  .catch(err => {
+      res.status(400).json(err)
+  })
+})
+
+module.exports = router;
 
 
 
