@@ -3,18 +3,11 @@ const express = require("express");
 const logger = require("morgan");
 // const path = require("path");
 const mongoose = require('mongoose');
+// require('dotenv').config()
 
-const dbURI = 'mongodb+srv://zjayes:fitness@cluster0.fsfq6.mongodb.net/fitnessDB?retryWrites=true&w=majority';
-
-mongoose.connect(dbURI, {useNewUrlParse: true, useUnifiedTopology: true})
-    .then((result) => app.listen(3000, () => {
-        console.log("App running on port 3000!")
-    }))
-    .catch((err) => console.log(err))
+const PORT = process.env.PORT || 3000;
 
 const app = express();
-
-app.set('view engine', 'ejs');
 
 app.use(logger("dev"));
 
@@ -22,11 +15,21 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use(express.static("public"));
+mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/workout", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useCreateIndex: true,
+  useFindAndModify: false
+}).catch(err => {
+  console.log(err)
+});
 
-// const databaseUrl = "fitnessDB";
-// const collections = ["workouts"];
+app.use(require("./routes/api-routes.js"));
+app.use(require("./routes/html-routes.js"));
 
-// const db = mongojs(databaseUrl, collections);
+app.listen(PORT, () => {
+    console.log(`App running on port ${PORT}!`)
+})
 
 
 
